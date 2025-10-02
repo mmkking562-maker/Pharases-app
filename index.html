@@ -1,0 +1,59 @@
+index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phrases App</title>
+</head>
+<body>
+  <h1>Phrases App</h1>
+  
+  <form id="phrase-form">
+    <input type="text" id="phrase-input" placeholder="Enter a phrase" required>
+    <button type="submit">Save</button>
+  </form>
+
+  <h2>Saved Phrases</h2>
+  <ul id="phrases-list"></ul>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase
+
+    // 🔹 Replace with your own values:
+    const supabaseUrl = "https://qrxiyoisqngsjgydqvwi.supabase.co"; 
+    const supabaseKey = "YOUR_ANON_KEY_HERE"; 
+    const db = createClient(supabaseUrl, supabaseKey);
+
+    const form = document.getElementById("phrase-form");
+    const input = document.getElementById("phrase-input");
+    const list = document.getElementById("phrases-list");
+
+    // Load phrases
+    async function loadPhrases() {
+      const { data, error } = await db.from("phrases").select("*");
+      list.innerHTML = "";
+      if (data) {
+        data.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = item.text;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    // Save phrase
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      await db.from("phrases").insert([{ text }]);
+      input.value = "";
+      loadPhrases();
+    });
+
+    loadPhrases();
+  </script>
+</body>
+</html>
